@@ -1,4 +1,4 @@
-import {sortCollection, sortMap} from "../lib/sort.js";
+import {sortMap} from "../lib/sort.js";
 
 /**
  * Инициализирует модуль сортировки
@@ -6,7 +6,7 @@ import {sortCollection, sortMap} from "../lib/sort.js";
  * @returns {Function} Функция применения сортировки
  */
 export function initSorting(columns) {
-    return (data, state, action) => {
+    return (query, state, action) => {
         let field = null;
         let order = 'none';
 
@@ -32,11 +32,7 @@ export function initSorting(columns) {
             }
         });
 
-        // Применение сортировки, если поле и порядок заданы
-        if (field && order !== 'none') {
-            return sortCollection(data, field, order);
-        }
-
-        return data;
+        const sort = (field && order !== 'none') ? `${field}:${order}` : null;
+        return sort ? Object.assign({}, query, { sort }) : query;
     };
 }
