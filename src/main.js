@@ -9,7 +9,7 @@ import {processFormData} from "./lib/utils.js";
 import {initTable} from "./components/table.js";
 import {initPagination} from "./components/pagination.js";
 import {initSorting} from "./components/sorting.js";
-import {initFiltering} from "./components/filtering.js";
+// import {initFiltering} from "./components/filtering.js";
 import {initSearching} from "./components/searching.js";
 
 // Исходные данные используемые в render()
@@ -40,10 +40,10 @@ function render(action) {
     let result = [...data]; // копирование для последующего изменения
     
     // @todo: использование - применяется поиск перед фильтрацией
-    result = applySearching(result, state, action);
-    result = applyFiltering(result, state, action);
-    result = applySorting(result, state, action);
-    result = applyPagination(result, state, action);
+    // result = applySearching(result, state, action);
+    // result = applyFiltering(result, state, action);
+    // result = applySorting(result, state, action);
+    // result = applyPagination(result, state, action);
 
     sampleTable.render(result)
 }
@@ -59,9 +59,9 @@ const sampleTable = initTable({
 const applySearching = initSearching('search');
 
 // @todo: инициализация фильтрации
-const applyFiltering = initFiltering(sampleTable.filter.elements, {
-    searchBySeller: indexes.sellers
-});
+// const applyFiltering = initFiltering(sampleTable.filter.elements, {
+//     searchBySeller: indexes.sellers
+// });
 
 // @todo: инициализация сортировки
 const applySorting = initSorting([
