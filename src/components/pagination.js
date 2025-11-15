@@ -4,7 +4,7 @@ import {getPages} from "../lib/utils.js";
  * Инициализирует модуль пагинации
  * @param {Object} elements - Элементы пагинации
  * @param {Function} createPage - Колбэк для создания кнопки страницы
- * @returns {Function} Функция применения пагинации
+ * @returns {Object} Объект с функциями applyPagination и updatePagination
  */
 export function initPagination(elements, createPage) {
     const {
@@ -18,9 +18,10 @@ export function initPagination(elements, createPage) {
         lastPage
     } = elements;
 
-    return (data, state, action) => {
-        const rowsPerPage = state.rowsPerPage;
-        const pageCount = Math.ceil(data.length / rowsPerPage);
+    let pageCount;
+
+    const applyPagination = (query, state, action) => {
+        const limit = state.rowsPerPage;
         let page = state.page;
 
         // @todo: #2.6 - Обработка действий пагинации
@@ -41,9 +42,15 @@ export function initPagination(elements, createPage) {
             }
         }
 
-        // @todo: #2.1 - Промежуточные переменные
-        const skip = (page - 1) * rowsPerPage;
-        
+        return Object.assign({}, query, {
+            limit,
+            page
+        });
+    }
+
+    const updatePagination = (total, { page, limit }) => {
+        pageCount = Math.ceil(total / limit);
+
         // @todo: #2.3 - Подготовка шаблона страницы
         const pageTemplate = pages.firstElementChild.cloneNode(true);
         pages.firstElementChild.remove();
@@ -56,11 +63,13 @@ export function initPagination(elements, createPage) {
         }));
 
         // @todo: #2.5 - Вывод статуса пагинации
-        fromRow.textContent = (page - 1) * rowsPerPage + 1;
-        toRow.textContent = Math.min((page * rowsPerPage), data.length);
-        totalRows.textContent = data.length;
+        fromRow.textContent = (page - 1) * limit + 1;
+        toRow.textContent = Math.min((page * limit), total);
+        totalRows.textContent = total;
+    };
 
-        // @todo: #2.2 - Возврат данных для текущей страницы
-        return data.slice(skip, skip + rowsPerPage);
+    return {
+        updatePagination,
+        applyPagination
     };
 }
