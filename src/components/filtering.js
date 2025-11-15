@@ -1,12 +1,9 @@
-import {createComparison, defaultRules} from "../lib/compare.js";
-
 /**
  * Инициализирует модуль фильтрации
  * @param {Object} elements - Элементы фильтрации
- * @param {Object} indexes - Индексы для заполнения выпадающих списков
- * @returns {Function} Функция применения фильтрации
+ * @returns {Object} Объект с функциями applyFiltering и updateIndexes
  */
-export function initFiltering(elements, indexes) {
+export function initFiltering(elements) {
     const {
         searchByDate,
         searchByCustomer,
@@ -15,24 +12,18 @@ export function initFiltering(elements, indexes) {
         totalTo
     } = elements;
 
-    // @todo: #4.3 - Создание функции сравнения
-    const compare = createComparison(defaultRules);
+    const updateIndexes = (elements, indexes) => {
+        Object.keys(indexes).forEach((elementName) => {
+            elements[elementName].append(...Object.values(indexes[elementName]).map(name => {
+                const el = document.createElement('option');
+                el.textContent = name;
+                el.value = name;
+                return el;
+            }))
+        })
+    }
 
-    // @todo: #4.1 - Заполнение выпадающих списков данными
-    Object.keys(indexes).forEach(elementName => {
-        const element = elements[elementName];
-        if (element && element.tagName === 'SELECT') {
-            const options = Object.values(indexes[elementName]).map(name => {
-                const option = document.createElement('option');
-                option.value = name;
-                option.textContent = name;
-                return option;
-            });
-            element.append(...options);
-        }
-    });
-
-    return (data, state, action) => {
+    const applyFiltering = (query, state, action) => {
         // @todo: #4.2 - Обработка очистки полей фильтров
         if (action && action.name === 'clear') {
             const field = action.dataset.field;
@@ -46,7 +37,21 @@ export function initFiltering(elements, indexes) {
             }
         }
 
-        // @todo: #4.5 - Применение фильтрации к данным
-        return data.filter(row => compare(row, state));
-    };
+        // @todo: #4.5 - Формирование параметров фильтрации для сервера
+        const filter = {};
+        Object.keys(elements).forEach(key => {
+            if (elements[key]) {
+                if (['INPUT', 'SELECT'].includes(elements[key].tagName) && elements[key].value) {
+                    filter[`filter[${elements[key].name}]`] = elements[key].value;
+                }
+            }
+        })
+
+        return Object.keys(filter).length ? Object.assign({}, query, filter) : query;
+    }
+
+    return {
+        updateIndexes,
+        applyFiltering
+    }
 }

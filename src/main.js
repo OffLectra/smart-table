@@ -9,7 +9,7 @@ import {processFormData} from "./lib/utils.js";
 import {initTable} from "./components/table.js";
 import {initPagination} from "./components/pagination.js";
 import {initSorting} from "./components/sorting.js";
-// import {initFiltering} from "./components/filtering.js";
+import {initFiltering} from "./components/filtering.js";
 import {initSearching} from "./components/searching.js";
 
 const api = initData(sourceData);
@@ -38,14 +38,12 @@ async function render(action) {
     let state = collectState(); // состояние полей из таблицы
     let query = {}; // здесь будут формироваться параметры запроса
     
-    
-    // result = applySearching(result, state, action);
-    // result = applyFiltering(result, state, action);
-    // result = applySorting(result, state, action);
-    
+    query = applyFiltering(query, state, action);
+    query = applySorting(query, state, action);
     query = applyPagination(query, state, action);
 
     const { total, items } = await api.getRecords(query);
+    
     updatePagination(total, query);
     
     sampleTable.render(items)
@@ -61,10 +59,8 @@ const sampleTable = initTable({
 // @todo: инициализация поиска
 const applySearching = initSearching('search');
 
-
-// const applyFiltering = initFiltering(sampleTable.filter.elements, {
-//     searchBySeller: indexes.sellers
-// });
+// @todo: инициализация фильтрации
+const {applyFiltering, updateIndexes} = initFiltering(sampleTable.filter.elements);
 
 // @todo: инициализация сортировки
 const applySorting = initSorting([
@@ -85,9 +81,11 @@ const {applyPagination, updatePagination} = initPagination(
     }
 );
 
-// @todo: добавление функции init()
 async function init() {
     const indexes = await api.getIndexes();
+    updateIndexes(sampleTable.filter.elements, {
+        searchBySeller: indexes.sellers
+    });
 }
 
 const appRoot = document.querySelector('#app');
